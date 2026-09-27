@@ -35,6 +35,13 @@
           "imageWidth": 76
         }
       ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Gather uses your photos to add a cover image to an event.",
+          "microphonePermission": false
+        }
+      ],
       "expo-secure-store",
       "@react-native-community/datetimepicker",
       "./plugins/with-event-search"

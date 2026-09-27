@@ -1,7 +1,15 @@
 import { useQuery } from '@tanstack/react-query';
 import { FlashList } from '@shopify/flash-list';
 import { useMemo, useState } from 'react';
-import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
 import { Link } from 'expo-router';
 import { Plus, Search } from 'lucide-react-native';
 import { EventCard } from '@/components/event-card';
@@ -46,7 +54,12 @@ export default function DiscoverScreen() {
           style={s.input}
         />
       </View>
-      <View style={s.chips}>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        style={s.chipScroll}
+        contentContainerStyle={s.chips}
+      >
         <Pressable onPress={() => setCategory('')} style={[s.chip, !category && s.selected]}>
           <Text style={[s.chipText, !category && s.selectedText]}>All</Text>
         </Pressable>
@@ -59,7 +72,7 @@ export default function DiscoverScreen() {
             <Text style={[s.chipText, category === c && s.selectedText]}>{c}</Text>
           </Pressable>
         ))}
-      </View>
+      </ScrollView>
       {result.isLoading ? (
         <ActivityIndicator color={colors.rust} style={{ marginTop: 48 }} />
       ) : result.isError ? (
@@ -113,6 +126,7 @@ const s = StyleSheet.create({
     paddingHorizontal: 14,
   },
   input: { flex: 1, color: colors.ink, fontSize: 15 },
+  chipScroll: { height: 62, flexGrow: 0, flexShrink: 0 },
   chips: { flexDirection: 'row', gap: 8, paddingVertical: 14 },
   chip: {
     borderWidth: 1,

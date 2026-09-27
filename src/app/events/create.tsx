@@ -2,6 +2,8 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Stack, router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
+import { Image } from 'expo-image';
+import * as ImagePicker from 'expo-image-picker';
 import {
   Alert,
   Platform,
@@ -17,6 +19,7 @@ import { eventsApi } from '@/shared/api/client';
 import { categories, type EventCategory, type EventDto, type EventInput } from '@/shared/api/types';
 import { useAuth } from '@/shared/auth/auth-provider';
 import { colors } from '@/shared/theme';
+import { uploadEventCoverImage } from '@/shared/storage/upload-event-cover-image';
 
 const defaultStartAt = new Date(Date.now() + 86_400_000);
 
@@ -50,6 +53,7 @@ export default function CreateEventRoute() {
 }
 
 function EventEditor({ event }: { event?: EventDto }) {
+  const { session } = useAuth();
   const qc = useQueryClient();
   const [title, setTitle] = useState(event?.title ?? '');
   const [description, setDescription] = useState(event?.description ?? '');
@@ -60,24 +64,45 @@ function EventEditor({ event }: { event?: EventDto }) {
   );
   const [showDate, setShowDate] = useState(false);
   const [pickerMode, setPickerMode] = useState<'date' | 'time'>('date');
-  const [imageUrl, setImageUrl] = useState(
+  const [imageUrl] = useState(
     event?.imageUrl ?? 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=1200',
   );
+  const [coverImage, setCoverImage] = useState<ImagePicker.ImagePickerAsset | null>(null);
+  const [isPickingImage, setIsPickingImage] = useState(false);
+  const chooseCoverImage = async () => {
+    setIsPickingImage(true);
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ['images'],
+        allowsEditing: true,
+        aspect: [16, 9],
+        quality: 0.85,
+      });
+      if (!result.canceled) setCoverImage(result.assets[0]);
+    } catch {
+      Alert.alert('Could not open photos', 'Please try choosing a cover image again.');
+    } finally {
+      setIsPickingImage(false);
+    }
+  };
   const mutation = useMutation({
     mutationFn: async () => {
+      if (title.trim().length < 4) throw new Error('Title must be at least 4 characters.');
+      if (description.trim().length < 20)
+        throw new Error('Description must be at least 20 characters.');
+      if (!location.trim()) throw new Error('Add a location.');
+      const savedImageUrl = coverImage
+        ? await uploadEventCoverImage(coverImage, session!.user.id)
+        : imageUrl;
       const input: EventInput = {
         title: title.trim(),
         description: description.trim(),
         location: location.trim(),
         category,
-        imageUrl: imageUrl.trim(),
+        imageUrl: savedImageUrl,
         startsAt: startsAt.toISOString(),
         endsAt: null,
       };
-      if (input.title.length < 4) throw new Error('Title must be at least 4 characters.');
-      if (input.description.length < 20)
-        throw new Error('Description must be at least 20 characters.');
-      if (!input.location) throw new Error('Add a location.');
       return event ? eventsApi.update(event.id, input) : eventsApi.create(input);
     },
     onSuccess: async (saved) => {
@@ -162,16 +187,41 @@ function EventEditor({ event }: { event?: EventDto }) {
           </Pressable>
         ))}
       </View>
-      <Text style={s.label}>Cover image URL</Text>
-      <TextInput
-        value={imageUrl}
-        onChangeText={setImageUrl}
-        autoCapitalize="none"
-        style={s.input}
-      />
-      <Pressable disabled={mutation.isPending} onPress={() => mutation.mutate()} style={s.button}>
+      <Text style={s.label}>Cover image</Text>
+      <View style={s.coverPicker}>
+        <Image
+          source={{ uri: coverImage?.uri ?? imageUrl }}
+          contentFit="cover"
+          style={s.coverPreview}
+          accessibilityLabel="Event cover preview"
+        />
+        <Pressable
+          disabled={mutation.isPending || isPickingImage}
+          onPress={chooseCoverImage}
+          style={s.coverButton}
+        >
+          <Text style={s.coverButtonText}>
+            {isPickingImage
+              ? 'Opening photos…'
+              : coverImage || event
+                ? 'Change image'
+                : 'Choose image'}
+          </Text>
+        </Pressable>
+      </View>
+      <Pressable
+        disabled={mutation.isPending || isPickingImage}
+        onPress={() => mutation.mutate()}
+        style={s.button}
+      >
         <Text style={s.buttonText}>
-          {mutation.isPending ? 'Saving…' : event ? 'Save changes' : 'Create event'}
+          {mutation.isPending
+            ? coverImage
+              ? 'Uploading & saving…'
+              : 'Saving…'
+            : event
+              ? 'Save changes'
+              : 'Create event'}
         </Text>
       </Pressable>
     </ScrollView>
@@ -216,6 +266,18 @@ const s = StyleSheet.create({
   active: { backgroundColor: colors.ink, borderColor: colors.ink },
   chipText: { fontSize: 12, color: colors.muted },
   activeText: { color: 'white' },
+  coverPicker: { gap: 10 },
+  coverPreview: { width: '100%', height: 170, borderRadius: 12, backgroundColor: colors.line },
+  coverButton: {
+    alignSelf: 'flex-start',
+    borderWidth: 1,
+    borderColor: colors.line,
+    borderRadius: 10,
+    backgroundColor: colors.card,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+  },
+  coverButtonText: { color: colors.ink, fontSize: 14, fontWeight: '600' },
   button: {
     marginTop: 24,
     backgroundColor: colors.rust,
