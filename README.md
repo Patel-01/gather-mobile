@@ -44,3 +44,7 @@ The checked-in `api-contract/openapi.json` is copied from the web/API repository
 - `npm run lint` — Expo lint
 - `npx tsc --noEmit` — TypeScript check
 - `npx expo prebuild --clean` — regenerate native projects from app config and plugin
+
+## Cloud builds
+
+The public GitHub Actions workflow builds an Android debug APK and an iOS Simulator app on pushes to `master`; it can also be started manually from the repository's Actions tab. Download each result from the workflow run's Artifacts section. The iOS result targets the Simulator, not a physical iPhone. These are development artifacts, not store-release builds.

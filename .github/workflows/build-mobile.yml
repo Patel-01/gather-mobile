@@ -1,0 +1,69 @@
+name: Build Android and iOS
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [master]
+
+permissions:
+  contents: read
+
+jobs:
+  android:
+    name: Android APK
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22.13
+          cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: android-actions/setup-android@v3
+      - run: npm ci
+      - run: npx expo prebuild --clean --platform android
+      - name: Build debug APK
+        working-directory: android
+        run: ./gradlew assembleDebug --no-daemon
+      - uses: actions/upload-artifact@v4
+        with:
+          name: gather-android-apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+          retention-days: 14
+
+  ios-simulator:
+    name: iOS Simulator app
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22.13
+          cache: npm
+      - run: npm ci
+      - run: npx expo prebuild --clean --platform ios
+      - name: Install CocoaPods
+        working-directory: ios
+        run: pod install
+      - name: Build iOS Simulator app
+        run: >-
+          xcodebuild
+          -workspace ios/Gather.xcworkspace
+          -scheme Gather
+          -configuration Debug
+          -destination 'generic/platform=iOS Simulator'
+          -derivedDataPath "$RUNNER_TEMP/GatherDerivedData"
+          CODE_SIGNING_ALLOWED=NO
+          build
+      - name: Package simulator app
+        run: ditto -c -k --sequesterRsrc --keepParent "$RUNNER_TEMP/GatherDerivedData/Build/Products/Debug-iphonesimulator/Gather.app" "$RUNNER_TEMP/gather-ios-simulator.zip"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: gather-ios-simulator
+          path: ${{ runner.temp }}/gather-ios-simulator.zip
+          if-no-files-found: error
+          retention-days: 14
