@@ -1,5 +1,6 @@
 import { router } from 'expo-router';
-import { Pressable, SafeAreaView, StyleSheet, Text, View, Alert } from 'react-native';
+import { Pressable, StyleSheet, Text, View, Alert } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { supabase } from '@/shared/auth/supabase';
 import { useAuth } from '@/shared/auth/auth-provider';
 import { colors } from '@/shared/theme';
@@ -10,7 +11,7 @@ export default function Account() {
     if (error) Alert.alert('Could not sign out', error.message);
   }
   return (
-    <SafeAreaView style={s.page}>
+    <SafeAreaView style={s.page} edges={['top', 'left', 'right']}>
       <Text style={s.heading}>Your account</Text>
       <View style={s.card}>
         <Text style={s.name}>{session?.user.email ?? 'Welcome to Gather'}</Text>
@@ -25,7 +26,7 @@ export default function Account() {
   );
 }
 const s = StyleSheet.create({
-  page: { flex: 1, backgroundColor: colors.paper, padding: 22, paddingTop: 30 },
+  page: { flex: 1, backgroundColor: colors.paper, padding: 22, paddingTop: 10 },
   heading: { fontFamily: 'Georgia', fontSize: 34, color: colors.ink },
   card: {
     backgroundColor: colors.card,

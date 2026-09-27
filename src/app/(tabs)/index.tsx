@@ -1,15 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { FlashList } from '@shopify/flash-list';
 import { useMemo, useState } from 'react';
-import {
-  ActivityIndicator,
-  Pressable,
-  SafeAreaView,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
+import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { Link } from 'expo-router';
 import { Plus, Search } from 'lucide-react-native';
 import { EventCard } from '@/components/event-card';
@@ -17,6 +9,7 @@ import { eventsApi } from '@/shared/api/client';
 import { categories } from '@/shared/api/types';
 import { colors } from '@/shared/theme';
 import { rankEvents } from '@/shared/search/rank-events';
+import { SafeAreaView } from 'react-native-safe-area-context';
 export default function DiscoverScreen() {
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState('');
@@ -26,7 +19,7 @@ export default function DiscoverScreen() {
   });
   const events = useMemo(() => rankEvents(query, result.data?.items ?? []), [query, result.data]);
   return (
-    <SafeAreaView style={s.page}>
+    <SafeAreaView style={s.page} edges={['top', 'left', 'right']}>
       <View style={s.header}>
         <View>
           <Text style={s.brand}>

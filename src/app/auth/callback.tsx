@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
-import { ActivityIndicator, SafeAreaView, Text } from 'react-native';
+import { ActivityIndicator, Text } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import * as Linking from 'expo-linking';
 import { router, useLocalSearchParams } from 'expo-router';
 import { supabase } from '@/shared/auth/supabase';

@@ -8,7 +8,7 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   const response = await fetch(`${baseUrl}${path}`, {
     ...init,
     headers: {
-      'content-type': 'application/json',
+      ...(init.body != null ? { 'content-type': 'application/json' } : {}),
       ...(data.session ? { authorization: `Bearer ${data.session.access_token}` } : {}),
       ...init.headers,
     },
@@ -31,6 +31,6 @@ export const eventsApi = {
   update: async (id: string, input: EventInput) =>
     request<EventDto>(`/events/${id}`, { method: 'PATCH', body: JSON.stringify(input) }),
   rsvp: async (id: string, attending: boolean) =>
-    request<void>(`/events/${id}/rsvp`, { method: attending ? 'POST' : 'DELETE' }),
+    request<EventDto>(`/events/${id}/rsvp`, { method: attending ? 'POST' : 'DELETE' }),
   myRsvps: async () => request<{ items: EventDto[]; total: number }>('/me/rsvps'),
 };

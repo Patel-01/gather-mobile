@@ -1,7 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
 import { FlashList } from '@shopify/flash-list';
 import { Link, router } from 'expo-router';
-import { ActivityIndicator, Pressable, SafeAreaView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { EventCard } from '@/components/event-card';
 import { eventsApi } from '@/shared/api/client';
 import { useAuth } from '@/shared/auth/auth-provider';
@@ -14,7 +15,7 @@ export default function Plans() {
     enabled: !!session,
   });
   return (
-    <SafeAreaView style={s.page}>
+    <SafeAreaView style={s.page} edges={['top', 'left', 'right']}>
       <Text style={s.heading}>My plans</Text>
       <Text style={s.sub}>Gatherings you’ve said yes to.</Text>
       {!session ? (
@@ -44,7 +45,7 @@ export default function Plans() {
   );
 }
 const s = StyleSheet.create({
-  page: { flex: 1, backgroundColor: colors.paper, padding: 20, paddingTop: 28 },
+  page: { flex: 1, backgroundColor: colors.paper, padding: 20, paddingTop: 10 },
   heading: { fontFamily: 'Georgia', fontSize: 34, color: colors.ink },
   sub: { fontSize: 15, color: colors.muted, marginTop: 6, marginBottom: 24 },
   empty: { alignItems: 'center', marginTop: 80, gap: 16 },

@@ -7,12 +7,12 @@ import {
   ActivityIndicator,
   Alert,
   Pressable,
-  SafeAreaView,
   ScrollView,
   StyleSheet,
   Text,
   View,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { eventsApi } from '@/shared/api/client';
 import { useAuth } from '@/shared/auth/auth-provider';
 import { colors } from '@/shared/theme';
@@ -52,9 +52,9 @@ export default function EventDetail() {
       </SafeAreaView>
     );
   return (
-    <>
+    <SafeAreaView style={s.page} edges={['top', 'left', 'right']}>
       <Stack.Screen options={{ headerShown: false }} />
-      <ScrollView style={s.page} contentContainerStyle={{ paddingBottom: 34 }}>
+      <ScrollView contentContainerStyle={{ paddingBottom: 24 }}>
         <View style={s.hero}>
           <Image
             source={{ uri: event.imageUrl }}
@@ -98,14 +98,14 @@ export default function EventDetail() {
           )}
         </View>
       </ScrollView>
-      <SafeAreaView style={s.footer}>
+      <SafeAreaView style={s.footer} edges={['bottom']}>
         <Pressable onPress={toggle} style={[s.cta, event.isAttending && s.cancel]}>
           <Text style={[s.ctaText, event.isAttending && s.cancelText]}>
             {event.isAttending ? 'You’re going · Cancel RSVP' : 'Count me in'}
           </Text>
         </Pressable>
       </SafeAreaView>
-    </>
+    </SafeAreaView>
   );
 }
 const s = StyleSheet.create({

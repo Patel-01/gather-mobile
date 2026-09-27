@@ -6,13 +6,13 @@ import {
   Alert,
   Platform,
   Pressable,
-  SafeAreaView,
   ScrollView,
   StyleSheet,
   Text,
   TextInput,
   View,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { eventsApi } from '@/shared/api/client';
 import { categories, type EventCategory, type EventDto, type EventInput } from '@/shared/api/types';
 import { useAuth } from '@/shared/auth/auth-provider';
